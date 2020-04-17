@@ -4,12 +4,13 @@ playernames = ["Sam", "Kim", "Sue", "Tim"]
 
 
 class Player:
-    def __init__(self, name, number):
+    def __init__(self, name, number, ui):
         self.name = name
         self.number = number
         self.voids = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.handvalue = 0
         self.handbu = []
+        self.ui = ui
 
     def getcards(self, deck):
         self.hand = []
@@ -64,6 +65,7 @@ class Player:
         trumplist = trumplist[trump:] + trumplist[:trump]
         LB_local = (trumplist[2], 2)
         suitcounts = [0, 0, 0, 0]
+
         for card in trial_hand:
             if card == LB_local:
                 suitcounts[trump] += 1
@@ -93,6 +95,7 @@ class Player:
             for suit in range(0, 4):
                 if suitcounts[suit] == 0 and not (suit == trump):
                     self.handvalue += 6
+
         if bidding_round == 0:
             if self.partner.number == dealer_num:
                 # Extra points for adding up-card to hand or to partner's hand.
@@ -433,11 +436,12 @@ class Player:
 
 
 class LivePlayer(Player):
-    def __init__(self, name, number):
+    def __init__(self, name, number, ui):
         self.name = name
         self.number = number
         self.voids = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.bidding_data = []
+        self.ui = ui
 
     def bid(
         self, bidding_round, player_position, teams, topcard, dealer_num, hand
@@ -451,16 +455,14 @@ class LivePlayer(Player):
         if bidding_round == 0:
             trump = topcard[0]
             handval = self.calc_handvalue(trump, 0, dealer_num, topcard, players)
-            validbids = [0, 1, 2, 88]
+            validbids = {0, 1, 2, 88}
             bid_type = 999
-            while bid_type not in validbids:
-                try:
-                    bid_type = int(
-                        input("\nDo you want to bid? (0=no; 1=yes; 2=go alone)")
-                    )
-                except ValueError:
-                    bid_type = 999
-            if bid_type == 88:
+            bid_type = self.ui.question(
+                "Do you want to bid? (0=no; 1=yes; 2=go alone)",
+                datatype=int,
+                options=validbids,
+            )
+            if bid_type == 88:  # WTF?
                 teams[0].score += 10
                 bid_type = 1
             roundinfo = [
@@ -478,30 +480,22 @@ class LivePlayer(Player):
             return trump, bid_type
         else:
             self.showhand(-1, 1)
-            validbids = [0, 1, 2]
+            validbids = {0, 1, 2}
             bid_type = 999
-            while bid_type not in validbids:
-                try:
-                    bid_type = int(
-                        input("\nDo you want to bid? (0=no; 1=yes; 2=go alone)")
-                    )
-                except ValueError:
-                    bid_type = 999
+            bid_type = self.ui.question(
+                "Do you want to bid? (0=no; 1=yes; 2=go alone)",
+                datatype=int,
+                options=validbids,
+            )
             if bid_type > 0:
-                validtrump = [0, 1, 2, 3]
+                validtrump = {0, 1, 2, 3}
                 trump = 999
-                del validtrump[topcard[0]]
-                while trump not in validtrump:
-                    try:
-                        trump = int(
-                            input(
-                                "Which suit? (hearts=0, spades=1, diamonds=2, clubs=3)"
-                            )
-                        )
-                    except ValueError:
-                        trump = 999
-                    if trump == topcard[0]:
-                        print("You cannot bid " + cards.suitlabels[topcard[0]] + ".")
+                validtrump.remove(topcard[0])
+                trump = self.ui.question(
+                    "Which suit? (hearts=0, spades=1, diamonds=2, clubs=3)",
+                    datatype=int,
+                    options=validtrump,
+                )
                 handval = self.calc_handvalue(trump, 1, dealer_num, topcard, players)
             else:
                 x = [0, 1, 2, 3]
@@ -542,23 +536,24 @@ class LivePlayer(Player):
         played_cards_values,
     ):
         self.showhand(trump, 0)
-        legit = [x + 1 for x in range(len(self.hand))]
+        legit = {x + 1 for x in range(len(self.hand))}
         pc = 999
         trumplist = [0, 1, 2, 3]
         trumplist = trumplist[trump:] + trumplist[:trump]
         LB_local = (trumplist[2], 2)
         while pc not in legit:
-            try:
-                pc = int(input("Which card? (1 through " + str(len(self.hand)) + "): "))
-            except ValueError:
-                pc = 999
+            pc = self.ui.question(
+                "Which card? (1 through " + str(len(self.hand)) + "): ",
+                datatype=int,
+                options=legit,
+            )
             if pc in legit:
                 if tricksequence.index(self) > 0:
                     if len(self.getsuit(leadsuit, self.hand, trump)) > 0:
                         if self.hand[pc - 1] == LB_local and leadsuit == trump:
                             pass
                         elif self.hand[pc - 1][0] != leadsuit and (pc in legit):
-                            print("Must follow lead suit.")
+                            self.ui.display("Must follow lead suit.")
                             pc = 99
         play_card = self.hand[pc - 1]
         del self.hand[pc - 1]

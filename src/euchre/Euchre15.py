@@ -6,9 +6,10 @@ from euchre.players import LivePlayer
 from euchre.players import Team
 from euchre.players import playernames
 from euchre import cards
+from euchre.ui import ConsoleUI
 
 
-def run(have_real_player, games):
+def run(have_real_player, games, ui):
 
     # realplayer = 0
     # name = ""
@@ -25,13 +26,13 @@ def run(have_real_player, games):
     # Set players
 
     if have_real_player:
-        Player0 = LivePlayer("You", 0)
+        Player0 = LivePlayer("You", 0, ui)
     else:
-        Player0 = Player(playernames[0], 0)
+        Player0 = Player(playernames[0], 0, ui)
 
-    Player1 = Player(playernames[1], 1)
-    Player2 = Player(playernames[2], 2)
-    Player3 = Player(playernames[3], 3)
+    Player1 = Player(playernames[1], 1, ui)
+    Player2 = Player(playernames[2], 2, ui)
+    Player3 = Player(playernames[3], 3, ui)
     Players = [Player0, Player1, Player2, Player3]
 
     Team1 = Team(1, Players)
@@ -45,7 +46,7 @@ def run(have_real_player, games):
     # Start game.
 
     if have_real_player:
-        print("Your partner is Sue.")
+        ui.display("Your partner is Sue.")
 
     positions = [0, 1, 2, 3]
     nextdealer_num = randint(0, 3)
@@ -58,7 +59,7 @@ def run(have_real_player, games):
         # Dealing
         dealer_num = nextdealer_num
         if have_real_player:
-            print("\n\nThe dealer is " + Players[dealer_num].name + ".")
+            ui.display("\n\nThe dealer is " + Players[dealer_num].name + ".")
         Team1.trickcount = 0
         Team2.trickcount = 0
         alone = 0
@@ -70,7 +71,7 @@ def run(have_real_player, games):
         # topcardbu = topcard[:]
         trump = topcard[0]
         if have_real_player:
-            print("The up-card is " + cards.labelcard(topcard[0], topcard[1]))
+            ui.display("The up-card is " + cards.labelcard(topcard[0], topcard[1]))
         for player in Players:
             if have_real_player and player == 0:
                 player.showhand(trump, 0)
@@ -114,7 +115,7 @@ def run(have_real_player, games):
                     ]
             if bid_type == 0:
                 if have_real_player:
-                    print(Players[bidder_num].name + " passes.")
+                    ui.display(Players[bidder_num].name + " passes.")
                 continue
             else:
                 if bid_type == 2:
@@ -123,7 +124,7 @@ def run(have_real_player, games):
                 if bidder_num == dealer_num:
                     action = " picks "
                 if have_real_player:
-                    print(
+                    ui.display(
                         Players[bidder_num].name
                         + action
                         + "up "
@@ -132,18 +133,15 @@ def run(have_real_player, games):
                         + "."
                     )
                 if isinstance(Players[dealer_num], LivePlayer):
-                    validdiscards = [1, 2, 3, 4, 5, 6]
+                    validdiscards = {1, 2, 3, 4, 5, 6}
                     lpdiscard = 999
                     Player0.showhand(trump, 0)
-                    while lpdiscard not in validdiscards:
-                        try:
-                            lpdiscard = int(
-                                input(
-                                    "\nWhich card do you want to discard? (1 through 6)"
-                                )
-                            )
-                        except ValueError:
-                            lpdiscard = 999
+                    lpdiscard = ui.question(
+                        "Which card do you want to discard? (1 through 6)",
+                        datatype=int,
+                        options=validdiscards,
+                    )
+
                     del Player0.hand[lpdiscard - 1]
             break
         if bid_type == 0:
@@ -160,13 +158,13 @@ def run(have_real_player, games):
                     bidmaker = Players[bidder_num]
                 if bid_type == 0:
                     if have_real_player:
-                        print(Players[bidder_num].name + " passes.")
+                        ui.display(Players[bidder_num].name + " passes.")
                     continue
                 else:
                     if bid_type == 2:
                         alone = 1
                     if have_real_player:
-                        print(
+                        ui.display(
                             Players[bidder_num].name
                             + " bids "
                             + cards.suitlabels[trump]
@@ -176,7 +174,7 @@ def run(have_real_player, games):
                     break
         if bid_type == 0:
             if have_real_player:
-                print("No one bids. Redeal!")
+                ui.display("No one bids. Redeal!")
             continue
         else:
             trumplist = [0, 1, 2, 3]
@@ -190,7 +188,7 @@ def run(have_real_player, games):
                 player.voids = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
             for trick in range(5):
                 if have_real_player:
-                    print("\nTrick " + str(trickcount) + ": ")
+                    ui.display("\nTrick " + str(trickcount) + ": ")
                 played_cards = []  # Cards played in trick
                 played_cards_values = []  # Values of cards played in trick
                 if trickcount == 1:
@@ -216,7 +214,7 @@ def run(have_real_player, games):
                         if played_card == LB:
                             leadsuit = trump
                     if have_real_player:
-                        print(
+                        ui.display(
                             player.name
                             + " plays "
                             + cards.labelcard(played_card[0], played_card[1])
@@ -265,7 +263,7 @@ def run(have_real_player, games):
                 Players[currentwinner_num].team.trickscore += 1
                 trickcount += 1
                 if have_real_player:
-                    print("\n" + Players[currentwinner_num].name + " wins trick!")
+                    ui.display("\n" + Players[currentwinner_num].name + " wins trick!")
             for team in Teams:
                 if team.bid == 0:
                     if team.trickscore > 2:
@@ -285,16 +283,14 @@ def run(have_real_player, games):
                         team.score += 3
             # End of round
             if have_real_player:
-                print(roundwinner.name + " wins round!")
-            if have_real_player:
-                print(
+                ui.display(roundwinner.name + " wins round!")
+                ui.display(
                     "Team 1 score: "
                     + str(Team1.score)
                     + "; Team 2 score: "
                     + str(Team2.score)
                 )
-            if have_real_player:
-                print(
+                ui.display(
                     "Team 1 trick count:"
                     + str(Team1.trickscore)
                     + "; Team 2 trick count: "
@@ -304,7 +300,7 @@ def run(have_real_player, games):
 
             if max(teamscores) > 9:
                 if have_real_player:
-                    print(
+                    ui.display(
                         "Team "
                         + str(teamscores.index(max(teamscores)) + 1)
                         + " wins game "
@@ -316,17 +312,21 @@ def run(have_real_player, games):
                 Team2.score = 0
                 game += 1
                 if have_real_player:
-                    print("END OF GAME " + str(game))
-                if have_real_player:
-                    print(
-                        "Team1 game wins=",
-                        Team1.gamescore,
-                        " Team2 game wins=",
-                        Team2.gamescore,
+                    ui.display("END OF GAME " + str(game))
+                    ui.display(
+                        "Team1 game wins="
+                        + str(Team1.gamescore)
+                        + " Team2 game wins="
+                        + str(Team2.gamescore)
                     )
 
     if have_real_player:
-        print("Team1 game wins=", Team1.gamescore, " Team2 game wins=", Team2.gamescore)
+        ui.display(
+            "Team1 game wins="
+            + str(Team1.gamescore)
+            + " Team2 game wins="
+            + str(Team2.gamescore)
+        )
     return Teams
 
 
@@ -335,28 +335,21 @@ if __name__ == "__main__":
     realplayer = 0
 
     # Get input from player.
+    ui = ConsoleUI()
 
-    while not realplayer:
-        try:
-            realplayer = int(input("Do you want to be a player? 1=yes, 2= no): "))
-        except ValueError:
-            realplayer == 0
-        if realplayer == 1:
-            have_real_player = True
-        elif realplayer == 2:
-            have_real_player = False
-        else:
-            realplayer = 0
+    realplayer = ui.question(
+        "Do you want to be a player? (y)es or (n)o: ", options={"y", "n"}
+    )
+    have_real_player = realplayer == "y"
 
     while not games:
-        try:
-            games = int(input("How many games?"))
-        except ValueError:
-            games = 0
+        games = ui.question(
+            "How many games do you want to play?", datatype=int, options=set(range(200))
+        )
         if games > 200 and have_real_player:
             games = 0
-            print("Too many!")
+            ui.display("Too many!")
         if games < 0:
             games = 0
 
-    run(have_real_player, games)
+    run(have_real_player, games, ui)

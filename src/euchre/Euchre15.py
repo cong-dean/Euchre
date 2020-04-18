@@ -6,7 +6,7 @@ from euchre.players import LivePlayer
 from euchre.players import Team
 from euchre.players import playernames
 from euchre import cards
-from euchre.ui import ConsoleUI
+from euchre.interaction import ConsoleUI
 
 
 def run(have_real_player, games, ui):

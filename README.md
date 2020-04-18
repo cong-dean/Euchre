@@ -3,20 +3,18 @@ This is my Euchre program.
 
 ## Developer installation
 
-    pip install -r dev-requirements.txt
-    pip install --editable .
-    pre-commit install
+    make install
 
 ## Running tests
 
 ### Just the tests
 
-    pytest
+    make test
 
 ### Tests, with coverage
 
-    coverage run euchre_env/bin/pytest; coverage report; coverage html
+    make coverage
 
-then,
+or, to automatically open the generated HTML report
 
-    open htmlcov/index.html
+    make coverage-html

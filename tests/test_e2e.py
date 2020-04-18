@@ -11,7 +11,7 @@ def test_end_to_end():
 
 
 def test_end_to_end_with_fake_real_player():
-    num_games = 5
+    num_games = 20
     ui_ = ui.FakeUI()
     result = Euchre15.run(have_real_player=True, games=num_games, ui=ui_)
     scores = [result[0].gamescore, result[1].gamescore]

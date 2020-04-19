@@ -6,7 +6,7 @@ from euchre.players import LivePlayer
 from euchre.players import Team
 from euchre.players import playernames
 from euchre import cards
-from euchre.interaction import ConsoleUI
+from euchre import interaction
 
 
 def run(have_real_player, games, ui):
@@ -59,8 +59,7 @@ def run(have_real_player, games, ui):
     while game < games:
         # Dealing
         dealer_num = nextdealer_num
-        if have_real_player:
-            ui.display("\n\nThe dealer is " + players[dealer_num].name + ".")
+        ui.display("\n\nThe dealer is " + players[dealer_num].name + ".")
         team1.trickcount = 0
         team2.trickcount = 0
         alone = 0
@@ -71,8 +70,7 @@ def run(have_real_player, games, ui):
         topcard = shuffledcards[0]
         # topcardbu = topcard[:]
         trump = topcard[0]
-        if have_real_player:
-            ui.display("The up-card is " + cards.labelcard(topcard[0], topcard[1]))
+        ui.display("The up-card is " + cards.labelcard(topcard[0], topcard[1]))
         for player in players:
             if have_real_player and player == 0:
                 player.showhand(trump, 0)
@@ -115,8 +113,7 @@ def run(have_real_player, games, ui):
                         discardvalues.index(max(discardvalues))
                     ]
             if bid_type == 0:
-                if have_real_player:
-                    ui.display(players[bidder_num].name + " passes.")
+                ui.display(players[bidder_num].name + " passes.")
                 continue
             else:
                 if bid_type == 2:
@@ -124,15 +121,14 @@ def run(have_real_player, games, ui):
                 action = " orders "
                 if bidder_num == dealer_num:
                     action = " picks "
-                if have_real_player:
-                    ui.display(
-                        players[bidder_num].name
-                        + action
-                        + "up "
-                        + cards.labelcard(topcard[0], topcard[1])
-                        + (". Going alone" * alone)
-                        + "."
-                    )
+                ui.display(
+                    players[bidder_num].name
+                    + action
+                    + "up "
+                    + cards.labelcard(topcard[0], topcard[1])
+                    + (". Going alone" * alone)
+                    + "."
+                )
                 if isinstance(players[dealer_num], LivePlayer):
                     validdiscards = {1, 2, 3, 4, 5, 6}
                     lpdiscard = 999
@@ -158,24 +154,21 @@ def run(have_real_player, games, ui):
                 if bid_type > 0:
                     bidmaker = players[bidder_num]
                 if bid_type == 0:
-                    if have_real_player:
-                        ui.display(players[bidder_num].name + " passes.")
+                    ui.display(players[bidder_num].name + " passes.")
                     continue
                 else:
                     if bid_type == 2:
                         alone = 1
-                    if have_real_player:
-                        ui.display(
-                            players[bidder_num].name
-                            + " bids "
-                            + cards.suitlabels[trump]
-                            + (" alone" * alone)
-                            + "."
-                        )
+                    ui.display(
+                        players[bidder_num].name
+                        + " bids "
+                        + cards.suitlabels[trump]
+                        + (" alone" * alone)
+                        + "."
+                    )
                     break
         if bid_type == 0:
-            if have_real_player:
-                ui.display("No one bids. Redeal!")
+            ui.display("No one bids. Redeal!")
             continue
         else:
             trumplist = [0, 1, 2, 3]
@@ -188,8 +181,7 @@ def run(have_real_player, games, ui):
             for player in players:
                 player.voids = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
             for trick in range(5):
-                if have_real_player:
-                    ui.display("\nTrick " + str(trickcount) + ": ")
+                ui.display("\nTrick " + str(trickcount) + ": ")
                 played_cards = []  # Cards played in trick
                 played_cards_values = []  # Values of cards played in trick
                 if trickcount == 1:
@@ -214,13 +206,12 @@ def run(have_real_player, games, ui):
                         leadsuit = played_card[0]
                         if played_card == left_bauer:
                             leadsuit = trump
-                    if have_real_player:
-                        ui.display(
-                            player.name
-                            + " plays "
-                            + cards.labelcard(played_card[0], played_card[1])
-                            + "."
-                        )
+                    ui.display(
+                        player.name
+                        + " plays "
+                        + cards.labelcard(played_card[0], played_card[1])
+                        + "."
+                    )
                     played_cards.append(played_card)
                     if not (played_card[0]) == leadsuit:
                         # All players update their known voids if the see current
@@ -263,8 +254,7 @@ def run(have_real_player, games, ui):
                     ].number
                 players[currentwinner_num].team.trickscore += 1
                 trickcount += 1
-                if have_real_player:
-                    ui.display("\n" + players[currentwinner_num].name + " wins trick!")
+                ui.display("\n" + players[currentwinner_num].name + " wins trick!")
             for team in Teams:
                 if team.bid == 0:
                     if team.trickscore > 2:
@@ -283,51 +273,47 @@ def run(have_real_player, games, ui):
                     if team.trickscore > 4:
                         team.score += 3
             # End of round
-            if have_real_player:
-                ui.display(roundwinner.name + " wins round!")
-                ui.display(
-                    "Team 1 score: "
-                    + str(team1.score)
-                    + "; Team 2 score: "
-                    + str(team2.score)
-                )
-                ui.display(
-                    "Team 1 trick count:"
-                    + str(team1.trickscore)
-                    + "; Team 2 trick count: "
-                    + str(team2.trickscore)
-                )
+            ui.display(roundwinner.name + " wins round!")
+            ui.display(
+                "Team 1 score: "
+                + str(team1.score)
+                + "; Team 2 score: "
+                + str(team2.score)
+            )
+            ui.display(
+                "Team 1 trick count:"
+                + str(team1.trickscore)
+                + "; Team 2 trick count: "
+                + str(team2.trickscore)
+            )
             teamscores = [team1.score, team2.score]
 
             if max(teamscores) > 9:
-                if have_real_player:
-                    ui.display(
-                        "Team "
-                        + str(teamscores.index(max(teamscores)) + 1)
-                        + " wins game "
-                        + str(game)
-                        + "!"
-                    )
+                ui.display(
+                    "Team "
+                    + str(teamscores.index(max(teamscores)) + 1)
+                    + " wins game "
+                    + str(game)
+                    + "!"
+                )
                 Teams[teamscores.index(max(teamscores))].gamescore += 1
                 team1.score = 0
                 team2.score = 0
                 game += 1
-                if have_real_player:
-                    ui.display("END OF GAME " + str(game))
-                    ui.display(
-                        "team1 game wins="
-                        + str(team1.gamescore)
-                        + " team2 game wins="
-                        + str(team2.gamescore)
-                    )
+                ui.display("END OF GAME " + str(game))
+                ui.display(
+                    "team1 game wins="
+                    + str(team1.gamescore)
+                    + " team2 game wins="
+                    + str(team2.gamescore)
+                )
 
-    if have_real_player:
-        ui.display(
-            "team1 game wins="
-            + str(team1.gamescore)
-            + " team2 game wins="
-            + str(team2.gamescore)
-        )
+    ui.display(
+        "team1 game wins="
+        + str(team1.gamescore)
+        + " team2 game wins="
+        + str(team2.gamescore)
+    )
     return Teams
 
 
@@ -336,7 +322,7 @@ if __name__ == "__main__":
     realplayer = 0
 
     # Get input from player.
-    ui = ConsoleUI()
+    ui = interaction.ConsoleUI()
 
     realplayer = ui.question(
         "Do you want to be a player? (y)es or (n)o: ", options={"y", "n"}
@@ -353,4 +339,6 @@ if __name__ == "__main__":
         if games < 0:
             games = 0
 
+    if not have_real_player:
+        ui = interaction.NullUI()
     run(have_real_player, games, ui)

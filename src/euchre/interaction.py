@@ -29,6 +29,14 @@ class ConsoleUI(AbstractUserInterface):
         return response
 
 
+class NullUI(AbstractUserInterface):
+    def display(self, text):
+        pass
+
+    def question(self, text, datatype=str, options=None):
+        pass
+
+
 class FakeUI(AbstractUserInterface):
 
     _log = []

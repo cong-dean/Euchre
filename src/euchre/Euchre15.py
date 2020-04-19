@@ -24,24 +24,25 @@ def run(have_real_player, games, ui):
     topcard = []
 
     # Set players
-
     if have_real_player:
-        Player0 = LivePlayer("You", 0, ui)
+        player0 = LivePlayer("You", 0, ui)
     else:
-        Player0 = Player(playernames[0], 0, ui)
+        player0 = Player(playernames[0], 0, ui)
 
-    Player1 = Player(playernames[1], 1, ui)
-    Player2 = Player(playernames[2], 2, ui)
-    Player3 = Player(playernames[3], 3, ui)
-    Players = [Player0, Player1, Player2, Player3]
+    players = [
+        player0,
+        Player(playernames[1], 1, ui),
+        Player(playernames[2], 2, ui),
+        Player(playernames[3], 3, ui),
+    ]
 
-    Team1 = Team(1, Players)
-    Team2 = Team(2, Players)
+    team1 = Team(1, players)
+    team2 = Team(2, players)
 
-    Team1.setopposingteam(Team2)
-    Team2.setopposingteam(Team1)
+    team1.setopposingteam(team2)
+    team2.setopposingteam(team1)
 
-    Teams = [Team1, Team2]
+    Teams = [team1, team2]
 
     # Start game.
 
@@ -59,25 +60,25 @@ def run(have_real_player, games, ui):
         # Dealing
         dealer_num = nextdealer_num
         if have_real_player:
-            ui.display("\n\nThe dealer is " + Players[dealer_num].name + ".")
-        Team1.trickcount = 0
-        Team2.trickcount = 0
+            ui.display("\n\nThe dealer is " + players[dealer_num].name + ".")
+        team1.trickcount = 0
+        team2.trickcount = 0
         alone = 0
         shuffledcards = cards.card_values[:]
         shuffle(shuffledcards)
-        for player in Players:
+        for player in players:
             player.getcards(shuffledcards)
         topcard = shuffledcards[0]
         # topcardbu = topcard[:]
         trump = topcard[0]
         if have_real_player:
             ui.display("The up-card is " + cards.labelcard(topcard[0], topcard[1]))
-        for player in Players:
+        for player in players:
             if have_real_player and player == 0:
                 player.showhand(trump, 0)
         dealers = positions[dealer_num:] + positions[:dealer_num]
-        nextdealer_num = Players[dealers[1]].number
-        firstbidder_num = Players[dealers[1]].number
+        nextdealer_num = players[dealers[1]].number
+        firstbidder_num = players[dealers[1]].number
         bidders = positions[firstbidder_num:] + positions[:firstbidder_num]
         # Bidding
         # bidding_round = 0
@@ -85,37 +86,37 @@ def run(have_real_player, games, ui):
         for bidder_num in bidders:
             # Second parameter is "player position" in bidding order,
             # currently stored when recording live player data. May have other uses.
-            bid = Players[bidder_num].bid(
+            bid = players[bidder_num].bid(
                 0, bidders.index(bidder_num), Teams, topcard, dealer_num, hand
             )
             bid_type = bid[1]
             if bid_type > 0:
-                bidmaker = Players[bidder_num]
-                Players[dealer_num].hand.append(topcard)
-                if isinstance(Players[dealer_num], LivePlayer):
+                bidmaker = players[bidder_num]
+                players[dealer_num].hand.append(topcard)
+                if isinstance(players[dealer_num], LivePlayer):
                     # If the LivePlayer needs to discard, the following is skipped.
                     # LP must be prompted to discard below.
                     pass
                 else:
-                    handbackup = Players[dealer_num].hand[:]
+                    handbackup = players[dealer_num].hand[:]
                     discardvalues = []
                     for discard in range(6):
-                        Players[dealer_num].hand = handbackup[:]
-                        del Players[dealer_num].hand[discard]
+                        players[dealer_num].hand = handbackup[:]
+                        del players[dealer_num].hand[discard]
                         discardvalues.append(
-                            Players[dealer_num].calc_handvalue(
-                                trump, 0, dealer_num, topcard, Players
+                            players[dealer_num].calc_handvalue(
+                                trump, 0, dealer_num, topcard, players
                             )
                         )
-                    Players[dealer_num].hand = handbackup
+                    players[dealer_num].hand = handbackup
                     # Discards from dealers hand the card that resulted in highest
                     # hand value when discarded:
-                    del Players[dealer_num].hand[
+                    del players[dealer_num].hand[
                         discardvalues.index(max(discardvalues))
                     ]
             if bid_type == 0:
                 if have_real_player:
-                    ui.display(Players[bidder_num].name + " passes.")
+                    ui.display(players[bidder_num].name + " passes.")
                 continue
             else:
                 if bid_type == 2:
@@ -125,47 +126,47 @@ def run(have_real_player, games, ui):
                     action = " picks "
                 if have_real_player:
                     ui.display(
-                        Players[bidder_num].name
+                        players[bidder_num].name
                         + action
                         + "up "
                         + cards.labelcard(topcard[0], topcard[1])
                         + (". Going alone" * alone)
                         + "."
                     )
-                if isinstance(Players[dealer_num], LivePlayer):
+                if isinstance(players[dealer_num], LivePlayer):
                     validdiscards = {1, 2, 3, 4, 5, 6}
                     lpdiscard = 999
-                    Player0.showhand(trump, 0)
+                    player0.showhand(trump, 0)
                     lpdiscard = ui.question(
                         "Which card do you want to discard? (1 through 6)",
                         datatype=int,
                         options=validdiscards,
                     )
 
-                    del Player0.hand[lpdiscard - 1]
+                    del player0.hand[lpdiscard - 1]
             break
         if bid_type == 0:
             # round of bidding in other suits, if bid_type is still 0.
             for bidder_num in bidders:
-                Players[bidder_num].updatecards_out(topcard)
+                players[bidder_num].updatecards_out(topcard)
             for bidder_num in bidders:
-                bid = Players[bidder_num].bid(
+                bid = players[bidder_num].bid(
                     1, bidders.index(bidder_num), Teams, topcard, dealer_num, hand
                 )
                 trump = bid[0]
                 bid_type = bid[1]
                 if bid_type > 0:
-                    bidmaker = Players[bidder_num]
+                    bidmaker = players[bidder_num]
                 if bid_type == 0:
                     if have_real_player:
-                        ui.display(Players[bidder_num].name + " passes.")
+                        ui.display(players[bidder_num].name + " passes.")
                     continue
                 else:
                     if bid_type == 2:
                         alone = 1
                     if have_real_player:
                         ui.display(
-                            Players[bidder_num].name
+                            players[bidder_num].name
                             + " bids "
                             + cards.suitlabels[trump]
                             + (" alone" * alone)
@@ -179,12 +180,12 @@ def run(have_real_player, games, ui):
         else:
             trumplist = [0, 1, 2, 3]
             trumplist = trumplist[trump:] + trumplist[:trump]
-            LB = (trumplist[2], 2)
+            left_bauer = (trumplist[2], 2)
             # Playing
             trickcount = 1
-            Team1.trickscore = 0
-            Team2.trickscore = 0
-            for player in Players:
+            team1.trickscore = 0
+            team2.trickscore = 0
+            for player in players:
                 player.voids = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
             for trick in range(5):
                 if have_real_player:
@@ -195,7 +196,7 @@ def run(have_real_player, games, ui):
                     leader_num = firstbidder_num
                 else:
                     leader_num = currentwinner_num
-                tricksequence = Players[leader_num:] + Players[0:leader_num]
+                tricksequence = players[leader_num:] + players[0:leader_num]
                 if bid_type == 2:
                     tricksequence.remove(bidmaker.partner)
                 for player in tricksequence:
@@ -204,14 +205,14 @@ def run(have_real_player, games, ui):
                         trump,
                         tricksequence,
                         bidmaker,
-                        Players,
+                        players,
                         currentwinner_num,
                         played_cards,
                         played_cards_values,
                     )
                     if player == tricksequence[0]:
                         leadsuit = played_card[0]
-                        if played_card == LB:
+                        if played_card == left_bauer:
                             leadsuit = trump
                     if have_real_player:
                         ui.display(
@@ -228,9 +229,9 @@ def run(have_real_player, games, ui):
                         # the end of the trick.
                         # Otherwise, players are playing as if people who have already
                         # played in trick could trump in.
-                        for player2 in Players:
+                        for player2 in players:
                             player2.voids[player.number][leadsuit] = 1
-                    for player2 in Players:
+                    for player2 in players:
                         if not (player2 == player):
                             # All players update the cards they know are out.
                             player2.updatecards_out(played_card)
@@ -242,9 +243,9 @@ def run(have_real_player, games, ui):
                                 # If player knows, based on played cards and own hand,
                                 # there's a void in a suit, this is registered as a
                                 # void for all players, only known to player.
-                                for player3 in Players:
+                                for player3 in players:
                                     player3.voids[player2.number][suit] = 1
-                    if played_card[0] == leadsuit or played_card == LB:
+                    if played_card[0] == leadsuit or played_card == left_bauer:
                         played_cards_values.append(
                             cards.calc_card_point_value(trump, played_card)
                         )
@@ -260,10 +261,10 @@ def run(have_real_player, games, ui):
                     currentwinner_num = tricksequence[
                         played_cards_values.index(max(played_cards_values))
                     ].number
-                Players[currentwinner_num].team.trickscore += 1
+                players[currentwinner_num].team.trickscore += 1
                 trickcount += 1
                 if have_real_player:
-                    ui.display("\n" + Players[currentwinner_num].name + " wins trick!")
+                    ui.display("\n" + players[currentwinner_num].name + " wins trick!")
             for team in Teams:
                 if team.bid == 0:
                     if team.trickscore > 2:
@@ -286,17 +287,17 @@ def run(have_real_player, games, ui):
                 ui.display(roundwinner.name + " wins round!")
                 ui.display(
                     "Team 1 score: "
-                    + str(Team1.score)
+                    + str(team1.score)
                     + "; Team 2 score: "
-                    + str(Team2.score)
+                    + str(team2.score)
                 )
                 ui.display(
                     "Team 1 trick count:"
-                    + str(Team1.trickscore)
+                    + str(team1.trickscore)
                     + "; Team 2 trick count: "
-                    + str(Team2.trickscore)
+                    + str(team2.trickscore)
                 )
-            teamscores = [Team1.score, Team2.score]
+            teamscores = [team1.score, team2.score]
 
             if max(teamscores) > 9:
                 if have_real_player:
@@ -308,24 +309,24 @@ def run(have_real_player, games, ui):
                         + "!"
                     )
                 Teams[teamscores.index(max(teamscores))].gamescore += 1
-                Team1.score = 0
-                Team2.score = 0
+                team1.score = 0
+                team2.score = 0
                 game += 1
                 if have_real_player:
                     ui.display("END OF GAME " + str(game))
                     ui.display(
-                        "Team1 game wins="
-                        + str(Team1.gamescore)
-                        + " Team2 game wins="
-                        + str(Team2.gamescore)
+                        "team1 game wins="
+                        + str(team1.gamescore)
+                        + " team2 game wins="
+                        + str(team2.gamescore)
                     )
 
     if have_real_player:
         ui.display(
-            "Team1 game wins="
-            + str(Team1.gamescore)
-            + " Team2 game wins="
-            + str(Team2.gamescore)
+            "team1 game wins="
+            + str(team1.gamescore)
+            + " team2 game wins="
+            + str(team2.gamescore)
         )
     return Teams
 

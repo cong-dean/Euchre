@@ -108,9 +108,9 @@ class Player:
 
     def showhand(self, trump, bidding_round):
         if isinstance(self, LivePlayer):
-            print("\nYour hand:")
+            self.ui.display("\nYour hand:")
         else:
-            print("\n" + self.name + "'s hand:")
+            self.ui.display("\n" + self.name + "'s hand:")
         self.hand.sort(key=lambda card: card[1])  # sort by position
         self.hand.sort(key=lambda card: card[0])  # sort by suit
         LB_local = (999, 999)
@@ -152,18 +152,18 @@ class Player:
             currentsuit = trump  # XXX Was "trump"  Don't think it needed to be. -Jesse
         else:
             currentsuit = self.hand[0][0]
-        print(cards.suitlabels[currentsuit] + ":"),
+        self.ui.display(cards.suitlabels[currentsuit] + ":"),
         for card in self.hand:
             if card == LB_local:
                 if not card == self.hand[0]:
-                    print(","),  # ,end=''
-                print(
+                    self.ui.display(","),  # ,end=''
+                self.ui.display(
                     "Jack of " + cards.suitlabels[card[0]] + " [left bauer]"
                 ),  # ,end=""
             elif card[0] == currentsuit:
                 if not card == self.hand[0]:
-                    print(","),  # ,end=''
-                print(
+                    self.ui.display(","),  # ,end=''
+                self.ui.display(
                     cards.positionlabels[card[1]]
                     + (
                         (" of " + cards.suitlabels[card[0]] + " [left bauer]")
@@ -172,13 +172,13 @@ class Player:
                 ),  # ,end=''
             else:
                 currentsuit = card[0]
-                print(
+                self.ui.display(
                     "\n"
                     + cards.suitlabels[card[0]]
                     + ": "
                     + cards.positionlabels[card[1]]
                 ),  # ,end=''
-        print("\n")
+        self.ui.display("\n")
 
     def bid(self, bidding_round, player_position, teams, topcard, dealer_num, hand):
         self.handval = 0

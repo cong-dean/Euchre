@@ -1,0 +1,6 @@
+euchre_env/
+__pycache__
+.coverage
+htmlcov/
+.vscode/
+src/euchre.egg-info
